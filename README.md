@@ -50,6 +50,11 @@ Create a new instance of the Smsir class.
 - `apiKey`: The API key for your SMS.ir account.
 - `lineNumber`: The default line number to use for sending messages.
 
+#### Example
+```js
+const sms = new Smsir('YOUR_API_KEY', YOUR_LINE_NUMBER);
+```
+
 ### Send()
 `Send(MessageText: string, Mobile: string, SendDateTime: number | null = null, lineNumber: number = this.DefaultLineNumber): Promise<any>`
 
@@ -59,6 +64,11 @@ Send a single SMS message to a single recipient.
 - `Mobile`: The mobile number of the recipient.
 - `SendDateTime`: (optional) The Unix timestamp of when to send the message (null for immediate sending).
 - `lineNumber`: (optional) The line number to use for sending the message.
+
+#### Example
+```js
+sms.Send('Hello World!', 'RECIPIENT_MOBILE_NUMBER');
+```
 
 ### SendBulk()
 `SendBulk(MessageText: string, Mobiles: Array<string>, SendDateTime: number | null = null, lineNumber: number = this.DefaultLineNumber): Promise<any>`
@@ -70,6 +80,11 @@ Send a single SMS message to multiple recipients.
 - `SendDateTime`: (optional) The Unix timestamp of when to send the message (null for immediate sending).
 - `lineNumber`: (optional) The line number to use for sending the message.
 
+#### Example
+```javascript
+sms.SendBulk('Hello World!', ['RECIPIENT_MOBILE_NUMBER_1', 'RECIPIENT_MOBILE_NUMBER_2']);
+```
+
 ### SendLikeToLike()
 `SendLikeToLike(MessageTexts: string, Mobiles: Array<string>, SendDateTime: number | null = null, lineNumber: number | null = null): Promise<any>`
 
@@ -80,12 +95,22 @@ Send multiple SMS messages to multiple recipients (one message per recipient).
 - `SendDateTime`: (optional) The Unix timestamp of when to send the message (null for immediate sending).
 - `lineNumber`: (optional) The line number to use for sending the message (null for default line number).
 
+#### Example
+```js
+sms.SendLikeToLike(['Hello World 1!', 'Hello World 2!'], ['RECIPIENT_MOBILE_NUMBER_1', 'RECIPIENT_MOBILE_NUMBER_2']);
+```
+
 ### DeleteScheduled()
 `DeleteScheduled(PackId: number): Promise<any>`
 
 Delete a scheduled SMS message.
 
 - `PackId`: The ID of the scheduled message pack to delete.
+
+#### Example
+```js
+sms.DeleteScheduled(SCHEDULED_MESSAGE_PACK_ID);
+```
 
 ### SendVerifyCode()
 `SendVerifyCode(Mobile: string, TemplateId: number, Parameters: Array<any>): Promise<any>`
