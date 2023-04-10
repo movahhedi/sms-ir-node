@@ -1,21 +1,21 @@
 # SMS.ir API
 
-`smsir` allows you to communicate with the SMS.ir API to send and receive SMS messages. The API key and default line number for your SMS.ir account are required to create a new instance of the Smsir class.
+`sms-ir-api` allows you to communicate with the SMS.ir API to send and receive SMS messages. The API key and default line number for your SMS.ir account are required to create a new instance of the Smsir class.
 
 ## Installation
 
-This package is available on npm as [`smsir`](https://npmjs.com/package/smsir). You can install it using either npm or yarn.
+This package is available on npm as [`sms-ir-api`](https://npmjs.com/package/sms-ir-api). You can install it using either npm or yarn.
 
 With npm:
 
 ```bash
-npm install smsir
+npm install sms-ir-api
 ```
 
 With yarn:
 
 ```bash
-yarn add smsir
+yarn add sms-ir-api
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ yarn add smsir
 To use this class in your JavaScript or TypeScript code, first import it:
 
 ```javascript
-import { Smsir } from "smsir";
+import { Smsir } from "sms-ir-api";
 ```
 
 Then create a new instance of the Smsir class using your SMS.ir API key and default line number:

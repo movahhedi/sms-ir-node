@@ -1,21 +1,21 @@
 # SMS.IR API
 
-ماژول `smsir` به شما اجازه می‌دهد تا با API SMS.IR برای ارسال و دریافت پیامک ارتباط برقرار کنید. API key و شماره خط پیش‌فرض برای حساب SMS.IR شما برای ایجاد یک نمونه جدید از کلاس Smsir لازم است.
+ماژول `sms-ir-api` به شما اجازه می‌دهد تا با API SMS.IR برای ارسال و دریافت پیامک ارتباط برقرار کنید. API key و شماره خط پیش‌فرض برای حساب SMS.IR شما برای ایجاد یک نمونه جدید از کلاس Smsir لازم است.
 
 ## نصب
 
-این بسته در npm به نام `smsir` در دسترس است. شما می‌توانید آن را با استفاده از npm یا yarn نصب کنید.
+این بسته در npm به نام `sms-ir-api` در دسترس است. شما می‌توانید آن را با استفاده از npm یا yarn نصب کنید.
 
 با npm:
 
 ```bash
-npm install smsir
+npm install sms-ir-api
 ```
 
 با yarn:
 
 ```bash
-yarn add smsir
+yarn add sms-ir-api
 ```
 
 ## استفاده
@@ -23,7 +23,7 @@ yarn add smsir
 برای استفاده از این کلاس در کد JavaScript یا TypeScript خود، ابتدا آن را وارد کنید:
 
 ```javascript
-import { Smsir } from "./Smsir";
+import { Smsir } from "sms-ir-api";
 ```
 
 سپس یک نمونه جدید از کلاس Smsir با استفاده از API key و شماره خط پیش‌فرض حساب SMS.IR خود بسازید:

@@ -1,7 +1,7 @@
 {
-	"name": "smsir",
+	"name": "sms-ir-api",
 	"version": "0.1.0",
-	"description": "SMS.IR API client for JS/TS/Node.js",
+	"description": "SMS.IR API client for JS/TS/ESM/Node.js",
 	"author": {
 		"name": "Shahab Movahhedi",
 		"email": "dev@shmovahhedi.com",
@@ -16,10 +16,15 @@
 	"bugs": "https://github.com/movahhedi/sms-ir-node",
 	"license": "MIT",
 	"keywords": [
+		"sms-ir-api",
 		"smsir",
+		"smsir-js",
+		"sms-typescript",
+		"sms-ir",
 		"sms.ir",
 		"sms",
-		"messaging"
+		"messaging",
+		"api"
 	],
 	"type": "module",
 	"source": "./src/smsir.ts",
@@ -60,6 +65,8 @@
 			"liketolike",
 			"microbundle"
 		],
-		"ignorePaths": ["README.fa.md"]
+		"ignorePaths": [
+			"README.fa.md"
+		]
 	}
 }
