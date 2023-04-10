@@ -1,6 +1,4 @@
-import axios from "axios";
-
-// cspell:ignore smsir liketolike
+import axios, { AxiosRequestConfig } from "axios";
 
 /**
  * Class representing the SMS.ir API
@@ -11,17 +9,20 @@ import axios from "axios";
  */
 export class Smsir {
 	private ApiKey: string;
-	private DefaultLineNumber: number;
+	private LineNumber: number;
+	private Username: string | null;
 	public readonly ApiUrl = "https://api.sms.ir/v1";
 
 	/**
 	 * Create a new instance of the Smsir class
-	 * @param {string} apiKey - The API key for the SMS.ir account
-	 * @param {number} lineNumber - The default line number to use for sending messages
+	 * @param {string} ApiKey - The API key for the SMS.ir account
+	 * @param {number} LineNumber - The  line number to use for sending messages
+	 * @param {string} [Username=null] - The username for the SMS.ir account
 	 */
-	constructor(apiKey: string, lineNumber: number) {
-		this.ApiKey = apiKey;
-		this.DefaultLineNumber = lineNumber;
+	constructor(ApiKey: string, LineNumber: number, Username: string | null = null) {
+		this.ApiKey = ApiKey;
+		this.LineNumber = LineNumber;
+		this.Username = Username;
 		return this;
 	}
 
@@ -33,7 +34,12 @@ export class Smsir {
 	 * @param {object|null} [Data=null] - The data to send with the request
 	 * @returns {Promise} The response from the API
 	 */
-	private async Api(UrlSuffix: string, Method: "GET" | "POST" | "DELETE" = "GET", Data: object | null = null): Promise<any> {
+	private async Api(
+		UrlSuffix: string,
+		Method: "GET" | "POST" | "DELETE" = "GET",
+		Data: object | null = null,
+		AxiosConfig: AxiosRequestConfig<object | null> = {}
+	): Promise<any> {
 		return axios({
 			headers: {
 				Accept: "application/json",
@@ -43,7 +49,8 @@ export class Smsir {
 			url: `${this.ApiUrl}/${UrlSuffix}`,
 			method: Method,
 			data: Data,
-		});
+			...AxiosConfig,
+		}).then((response) => response.data);
 	}
 
 	/**
@@ -51,16 +58,41 @@ export class Smsir {
 	 * @param {string} MessageText - The text of the message to send
 	 * @param {string} Mobile - The mobile number of the recipient
 	 * @param {number|null} [SendDateTime=null] - The Unix timestamp of when to send the message (null for immediate sending)
-	 * @param {number} [lineNumber=this.DefaultLineNumber] - The line number to use for sending the message
+	 * @param {number} [LineNumber=this.LineNumber] - The line number to use for sending the message
 	 * @returns {Promise} The response from the API
 	 */
 	async Send(
 		MessageText: string,
 		Mobile: string,
 		SendDateTime: number | null = null,
-		lineNumber: number = this.DefaultLineNumber
+		LineNumber: number = this.LineNumber
 	): Promise<any> {
-		return this.SendBulk(MessageText, [Mobile], SendDateTime, lineNumber);
+		return this.SendBulk(MessageText, [Mobile], SendDateTime, LineNumber);
+	}
+
+	/**
+	 * Send a single SMS message to a single recipient (The username for the SMS.ir account is required)
+	 * @param {string} MessageText - The text of the message to send
+	 * @param {string} Mobile - The mobile number of the recipient
+	 * @param {number} [LineNumber=this.LineNumber] - The line number to use for sending the message
+	 * @param {string} [Username=this.Username] - The username for the SMS.ir account
+	 * @returns {Promise} The response from the API
+	 */
+	async SendWithUsername(
+		MessageText: string,
+		Mobile: string,
+		LineNumber: number = this.LineNumber,
+		Username: string | null = this.Username
+	): Promise<any> {
+		return this.Api("send", "GET", null, {
+			params: {
+				username: Username,
+				password: this.ApiKey,
+				line: LineNumber,
+				mobile: Mobile,
+				text: MessageText,
+			},
+		});
 	}
 
 	/**
@@ -68,17 +100,17 @@ export class Smsir {
 	 * @param {string} MessageText - The text of the message to send
 	 * @param {Array<string>} Mobiles - An array of mobile numbers of the recipients
 	 * @param {number|null} [SendDateTime=null] - The Unix timestamp of when to send the message (null for immediate sending)
-	 * @param {number} [lineNumber=this.DefaultLineNumber] - The line number to use for sending the message
+	 * @param {number} [LineNumber=this.LineNumber] - The line number to use for sending the message
 	 * @returns {Promise} The response from the API
 	 */
 	async SendBulk(
 		MessageText: string,
 		Mobiles: Array<string>,
 		SendDateTime: number | null = null,
-		lineNumber: number = this.DefaultLineNumber
+		LineNumber: number = this.LineNumber
 	): Promise<any> {
 		return this.Api("send/bulk", "POST", {
-			lineNumber,
+			lineNumber: LineNumber,
 			MessageText,
 			Mobiles,
 			SendDateTime,
@@ -90,17 +122,17 @@ export class Smsir {
 	 * @param {string} MessageTexts - The text of the messages to send
 	 * @param {Array<string>} Mobiles - An array of mobile numbers of the recipients
 	 * @param {number|null} [SendDateTime=null] - The Unix timestamp of when to send the message (null for immediate sending)
-	 * @param {number|null} [lineNumber=null] - The line number to use for sending the message (null for default line number)
+	 * @param {number|null} [LineNumber=null] - The line number to use for sending the message (null for  line number)
 	 * @returns {Promise} The response from the API
 	 */
 	async SendLikeToLike(
 		MessageTexts: string,
 		Mobiles: Array<string>,
 		SendDateTime: number | null = null,
-		lineNumber: number | null = null
+		LineNumber: number = this.LineNumber
 	): Promise<any> {
 		return this.Api("send/liketolike", "POST", {
-			lineNumber: lineNumber || this.DefaultLineNumber,
+			lineNumber: LineNumber,
 			MessageTexts,
 			Mobiles,
 			SendDateTime,
@@ -171,8 +203,8 @@ export class Smsir {
 	 * @returns {Promise} The response from the API
 	 */
 	async ReportArchived(
-		fromDate: null = null,
-		toDate: null = null,
+		fromDate: number | null = null,
+		toDate: number | null = null,
 		pageSize: number = 10,
 		pageNumber: number = 1
 	): Promise<any> {
@@ -215,8 +247,8 @@ export class Smsir {
 	 * @returns {Promise} The response from the API
 	 */
 	async ReportArchivedReceived(
-		fromDate: null = null,
-		toDate: null = null,
+		fromDate: number | null = null,
+		toDate: number | null = null,
 		pageSize: number = 10,
 		pageNumber: number = 1
 	): Promise<any> {
