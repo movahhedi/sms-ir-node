@@ -1,6 +1,6 @@
 {
 	"name": "sms-ir-api",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "SMS.IR API client for JS/TS/ESM/Node.js",
 	"author": {
 		"name": "Shahab Movahhedi",
@@ -62,7 +62,7 @@
 		"language": "en",
 		"words": [
 			"smsir",
-			"liketolike",
+			"likeToLike",
 			"microbundle"
 		],
 		"ignorePaths": [

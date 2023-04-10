@@ -131,7 +131,7 @@ export class Smsir {
 		SendDateTime: number | null = null,
 		LineNumber: number = this.LineNumber
 	): Promise<any> {
-		return this.Api("send/liketolike", "POST", {
+		return this.Api("send/likeToLike", "POST", {
 			lineNumber: LineNumber,
 			MessageTexts,
 			Mobiles,
