@@ -1,11 +1,89 @@
 import axios, { type AxiosRequestConfig } from "axios";
 
+const DefaultPageSize = 100;
+
 type ILineNumber = string | number;
-type ReturnedData = any;
 type IParameter = {
 	name: string;
 	value: string;
 };
+
+interface Data_Base {
+	status: number;
+	message: string;
+	data: any;
+}
+
+interface Data_SendBulk extends Data_Base {
+	data: {
+		packId: string;
+		messageIds: number[];
+		cost: number;
+	};
+}
+interface Data_SendWithUsername extends Data_Verify {}
+interface Data_LikeToLike extends Data_SendBulk {}
+interface Data_DeleteScheduled extends Data_Base {
+	data: {
+		returnedCreditCount: number;
+		smsCount: number;
+	};
+}
+interface Data_Verify extends Data_Base {
+	data: {
+		messageId: number;
+		cost: number;
+	};
+}
+
+interface ReportSingle {
+	messageId: number;
+	mobile: string;
+	messageText: string;
+	sendDateTime: number;
+	lineNumber: ILineNumber;
+	cost: number;
+	deliveryState: number;
+	deliveryDateTime: number;
+}
+interface ReportPack {
+	packId: string;
+	recipientCount: number;
+	creationDateTime: number;
+}
+interface ReceiveSingle {
+	messageText: string;
+	number: ILineNumber;
+	mobile: string;
+	receivedDateTime: number;
+}
+interface Data_Report_Message extends Data_Base {
+	data: ReportSingle;
+}
+interface Data_Report_TodayPacks extends Data_Base {
+	data: ReportPack[];
+}
+
+interface Data_Report_Messages extends Data_Base {
+	data: ReportSingle[];
+}
+interface Data_Report_Today extends Data_Report_Messages {}
+interface Data_Report_Pack extends Data_Report_Messages {}
+interface Data_Report_Archive extends Data_Report_Messages {}
+
+interface Data_Receive_Messages extends Data_Base {
+	data: ReceiveSingle[];
+}
+interface Data_Receive_Latest extends Data_Receive_Messages {}
+interface Data_Receive_Today extends Data_Receive_Messages {}
+interface Data_Receive_Archive extends Data_Receive_Messages {}
+
+interface Data_Credit extends Data_Base {
+	data: number;
+}
+interface Data_Lines extends Data_Base {
+	data: ILineNumber[];
+}
 
 /**
  * Class representing the SMS.ir API
@@ -14,7 +92,7 @@ type IParameter = {
  * @see {@link https://github.com/movahhedi/sms-ir-node sms-ir-node's Repository}
  * @license MIT
  */
-export class Smsir {
+export default class Smsir {
 	private ApiKey: string;
 	private LineNumber: ILineNumber;
 	private Username: string | null;
@@ -46,7 +124,7 @@ export class Smsir {
 		Method: "GET" | "POST" | "DELETE" = "GET",
 		Data: object | null = null,
 		AxiosConfig: AxiosRequestConfig<object | null> = {}
-	): Promise<ReturnedData> {
+	): Promise<Data_Base> {
 		const response = await axios({
 			headers: {
 				Accept: "application/json",
@@ -74,7 +152,7 @@ export class Smsir {
 		Mobile: string,
 		SendDateTime: number | null = null,
 		LineNumber: ILineNumber = this.LineNumber
-	): Promise<ReturnedData> {
+	): Promise<Data_SendBulk> {
 		return this.SendBulk(MessageText, [Mobile], SendDateTime, LineNumber);
 	}
 
@@ -91,7 +169,7 @@ export class Smsir {
 		Mobile: string,
 		LineNumber: ILineNumber = this.LineNumber,
 		Username: string | null = this.Username
-	): Promise<ReturnedData> {
+	): Promise<Data_SendWithUsername> {
 		return this.Api("send", "GET", null, {
 			params: {
 				username: Username,
@@ -116,7 +194,7 @@ export class Smsir {
 		Mobiles: Array<string>,
 		SendDateTime: number | null = null,
 		LineNumber: ILineNumber = this.LineNumber
-	): Promise<ReturnedData> {
+	): Promise<Data_SendBulk> {
 		return this.Api("send/bulk", "POST", {
 			lineNumber: LineNumber,
 			MessageText,
@@ -138,7 +216,7 @@ export class Smsir {
 		Mobiles: Array<string>,
 		SendDateTime: number | null = null,
 		LineNumber: ILineNumber = this.LineNumber
-	): Promise<ReturnedData> {
+	): Promise<Data_LikeToLike> {
 		return this.Api("send/likeToLike", "POST", {
 			lineNumber: LineNumber,
 			MessageTexts,
@@ -152,7 +230,7 @@ export class Smsir {
 	 * @param {number} PackId - The ID of the scheduled message pack to delete
 	 * @returns {Promise} The response from the API
 	 */
-	async DeleteScheduled(PackId: number): Promise<ReturnedData> {
+	async DeleteScheduled(PackId: number): Promise<Data_DeleteScheduled> {
 		return this.Api(`send/scheduled/${PackId}`, "DELETE");
 	}
 
@@ -163,7 +241,7 @@ export class Smsir {
 	 * @param {} Parameters - An array of parameters to use in the verification code template
 	 * @returns {Promise} The response from the API
 	 */
-	async SendVerifyCode(Mobile: string, TemplateId: number, Parameters: IParameter[]): Promise<ReturnedData> {
+	async SendVerifyCode(Mobile: string, TemplateId: number, Parameters: IParameter[]): Promise<Data_Verify> {
 		return this.Api("send/verify", "POST", {
 			Mobile,
 			TemplateId,
@@ -176,8 +254,21 @@ export class Smsir {
 	 * @param {number} MessageId - The ID of the sent message to get a report on
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportMessage(MessageId: number): Promise<ReturnedData> {
+	async ReportMessage(MessageId: number): Promise<Data_Verify> {
 		return this.Api(`send/${MessageId}`);
+	}
+
+	/**
+	 * Get a report on today's sent SMS messages
+	 * @param {number} [pageSize=DefaultPageSize] - The number of results to return per page
+	 * @param {number} [pageNumber=1] - The page number to return results for
+	 * @returns {Promise} The response from the API
+	 */
+	async ReportTodayPacks(pageSize: number = DefaultPageSize, pageNumber: number = 1): Promise<Data_Report_TodayPacks> {
+		return this.Api("send/pack", "GET", {
+			pageSize,
+			pageNumber,
+		});
 	}
 
 	/**
@@ -185,17 +276,17 @@ export class Smsir {
 	 * @param {number} PackId - The ID of the sent message pack to get a report on
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportPack(PackId: number): Promise<ReturnedData> {
+	async ReportPack(PackId: number): Promise<Data_Report_Pack> {
 		return this.Api(`send/pack/${PackId}`);
 	}
 
 	/**
 	 * Get a report on today's sent SMS messages
-	 * @param {number} [pageSize=10] - The number of results to return per page
+	 * @param {number} [pageSize=DefaultPageSize] - The number of results to return per page
 	 * @param {number} [pageNumber=1] - The page number to return results for
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportToday(pageSize: number = 10, pageNumber: number = 1): Promise<ReturnedData> {
+	async ReportToday(pageSize: number = DefaultPageSize, pageNumber: number = 1): Promise<Data_Report_Today> {
 		return this.Api("send/live", "GET", {
 			pageSize,
 			pageNumber,
@@ -206,16 +297,16 @@ export class Smsir {
 	 * Get a report on archived sent SMS messages
 	 * @param {null} [fromDate=null] - The start date to get results for (null for no start date)
 	 * @param {null} [toDate=null] - The end date to get results for (null for no end date)
-	 * @param {number} [pageSize=10] - The number of results to return per page
+	 * @param {number} [pageSize=DefaultPageSize] - The number of results to return per page
 	 * @param {number} [pageNumber=1] - The page number to return results for
 	 * @returns {Promise} The response from the API
 	 */
 	async ReportArchived(
 		fromDate: number | null = null,
 		toDate: number | null = null,
-		pageSize: number = 10,
+		pageSize: number = DefaultPageSize,
 		pageNumber: number = 1
-	): Promise<ReturnedData> {
+	): Promise<Data_Report_Archive> {
 		return this.Api("send/archive", "GET", {
 			fromDate,
 			toDate,
@@ -226,20 +317,20 @@ export class Smsir {
 
 	/**
 	 * Get a report on the latest received SMS messages
-	 * @param {number} [count=100] - The number of results to return
+	 * @param {number} [count=DefaultPageSize] - The number of results to return
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportLatestReceived(count: number = 100): Promise<ReturnedData> {
+	async ReportLatestReceived(count: number = DefaultPageSize): Promise<Data_Receive_Latest> {
 		return this.Api("receive/latest", "GET", { count });
 	}
 
 	/**
 	 * Get a report on today's received SMS messages
-	 * @param {number} [pageSize=10] - The number of results to return per page
+	 * @param {number} [pageSize=DefaultPageSize] - The number of results to return per page
 	 * @param {number} [pageNumber=1] - The page number to return results for
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportTodayReceived(pageSize: number = 10, pageNumber: number = 1): Promise<ReturnedData> {
+	async ReportTodayReceived(pageSize: number = DefaultPageSize, pageNumber: number = 1): Promise<Data_Receive_Today> {
 		return this.Api("receive/live", "GET", {
 			pageSize,
 			pageNumber,
@@ -250,16 +341,16 @@ export class Smsir {
 	 * Get a report on archived received SMS messages
 	 * @param {null} [fromDate=null] - The start date to get results for (null for no start date)
 	 * @param {null} [toDate=null] - The end date to get results for (null for no end date)
-	 * @param {number} [pageSize=10] - The number of results to return per page
+	 * @param {number} [pageSize=DefaultPageSize] - The number of results to return per page
 	 * @param {number} [pageNumber=1] - The page number to return results for
 	 * @returns {Promise} The response from the API
 	 */
 	async ReportArchivedReceived(
 		fromDate: number | null = null,
 		toDate: number | null = null,
-		pageSize: number = 10,
+		pageSize: number = DefaultPageSize,
 		pageNumber: number = 1
-	): Promise<ReturnedData> {
+	): Promise<Data_Receive_Archive> {
 		return this.Api("receive/archive", "GET", {
 			fromDate,
 			toDate,
@@ -272,7 +363,7 @@ export class Smsir {
 	 * Get the remaining credit balance for the SMS.ir account
 	 * @returns {Promise} The response from the API
 	 */
-	async GetCredit(): Promise<ReturnedData> {
+	async GetCredit(): Promise<Data_Credit> {
 		return this.Api("credit");
 	}
 
@@ -280,7 +371,7 @@ export class Smsir {
 	 * Get a list of available line numbers for the SMS.ir account
 	 * @returns {Promise} The response from the API
 	 */
-	async GetLineNumbers(): Promise<ReturnedData> {
+	async GetLineNumbers(): Promise<Data_Lines> {
 		return this.Api("line");
 	}
 }
