@@ -92,7 +92,7 @@ interface Data_Lines extends Data_Base {
  * @see {@link https://github.com/movahhedi/sms-ir-node sms-ir-node's Repository}
  * @license MIT
  */
-export default class Smsir {
+export class Smsir {
 	private ApiKey: string;
 	private LineNumber: ILineNumber;
 	private Username: string | null;
@@ -375,3 +375,5 @@ export default class Smsir {
 		return this.Api("line");
 	}
 }
+
+export default Smsir;
