@@ -1,4 +1,11 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { type AxiosRequestConfig } from "axios";
+
+type ILineNumber = string | number;
+type ReturnedData = any;
+type IParameter = {
+	name: string;
+	value: string;
+};
 
 /**
  * Class representing the SMS.ir API
@@ -9,7 +16,7 @@ import axios, { AxiosRequestConfig } from "axios";
  */
 export class Smsir {
 	private ApiKey: string;
-	private LineNumber: number;
+	private LineNumber: ILineNumber;
 	private Username: string | null;
 	public readonly ApiUrl = "https://api.sms.ir/v1";
 
@@ -19,7 +26,7 @@ export class Smsir {
 	 * @param {number} LineNumber - The  line number to use for sending messages
 	 * @param {string} [Username=null] - The username for the SMS.ir account
 	 */
-	constructor(ApiKey: string, LineNumber: number, Username: string | null = null) {
+	constructor(ApiKey: string, LineNumber: ILineNumber, Username: string | null = null) {
 		this.ApiKey = ApiKey;
 		this.LineNumber = LineNumber;
 		this.Username = Username;
@@ -39,8 +46,8 @@ export class Smsir {
 		Method: "GET" | "POST" | "DELETE" = "GET",
 		Data: object | null = null,
 		AxiosConfig: AxiosRequestConfig<object | null> = {}
-	): Promise<any> {
-		return axios({
+	): Promise<ReturnedData> {
+		const response = await axios({
 			headers: {
 				Accept: "application/json",
 				"Content-Type": "application/json",
@@ -50,7 +57,8 @@ export class Smsir {
 			method: Method,
 			data: Data,
 			...AxiosConfig,
-		}).then((response) => response.data);
+		});
+		return response?.data;
 	}
 
 	/**
@@ -65,8 +73,8 @@ export class Smsir {
 		MessageText: string,
 		Mobile: string,
 		SendDateTime: number | null = null,
-		LineNumber: number = this.LineNumber
-	): Promise<any> {
+		LineNumber: ILineNumber = this.LineNumber
+	): Promise<ReturnedData> {
 		return this.SendBulk(MessageText, [Mobile], SendDateTime, LineNumber);
 	}
 
@@ -74,16 +82,16 @@ export class Smsir {
 	 * Send a single SMS message to a single recipient (The username for the SMS.ir account is required)
 	 * @param {string} MessageText - The text of the message to send
 	 * @param {string} Mobile - The mobile number of the recipient
-	 * @param {number} [LineNumber=this.LineNumber] - The line number to use for sending the message
+	 * @param {ILineNumber} [LineNumber=this.LineNumber] - The line number to use for sending the message
 	 * @param {string} [Username=this.Username] - The username for the SMS.ir account
 	 * @returns {Promise} The response from the API
 	 */
 	async SendWithUsername(
 		MessageText: string,
 		Mobile: string,
-		LineNumber: number = this.LineNumber,
+		LineNumber: ILineNumber = this.LineNumber,
 		Username: string | null = this.Username
-	): Promise<any> {
+	): Promise<ReturnedData> {
 		return this.Api("send", "GET", null, {
 			params: {
 				username: Username,
@@ -100,15 +108,15 @@ export class Smsir {
 	 * @param {string} MessageText - The text of the message to send
 	 * @param {Array<string>} Mobiles - An array of mobile numbers of the recipients
 	 * @param {number|null} [SendDateTime=null] - The Unix timestamp of when to send the message (null for immediate sending)
-	 * @param {number} [LineNumber=this.LineNumber] - The line number to use for sending the message
+	 * @param {ILineNumber} [LineNumber=this.LineNumber] - The line number to use for sending the message
 	 * @returns {Promise} The response from the API
 	 */
 	async SendBulk(
 		MessageText: string,
 		Mobiles: Array<string>,
 		SendDateTime: number | null = null,
-		LineNumber: number = this.LineNumber
-	): Promise<any> {
+		LineNumber: ILineNumber = this.LineNumber
+	): Promise<ReturnedData> {
 		return this.Api("send/bulk", "POST", {
 			lineNumber: LineNumber,
 			MessageText,
@@ -122,15 +130,15 @@ export class Smsir {
 	 * @param {string} MessageTexts - The text of the messages to send
 	 * @param {Array<string>} Mobiles - An array of mobile numbers of the recipients
 	 * @param {number|null} [SendDateTime=null] - The Unix timestamp of when to send the message (null for immediate sending)
-	 * @param {number|null} [LineNumber=null] - The line number to use for sending the message (null for  line number)
+	 * @param {ILineNumber|null} [LineNumber=null] - The line number to use for sending the message (null for  line number)
 	 * @returns {Promise} The response from the API
 	 */
 	async SendLikeToLike(
 		MessageTexts: string,
 		Mobiles: Array<string>,
 		SendDateTime: number | null = null,
-		LineNumber: number = this.LineNumber
-	): Promise<any> {
+		LineNumber: ILineNumber = this.LineNumber
+	): Promise<ReturnedData> {
 		return this.Api("send/likeToLike", "POST", {
 			lineNumber: LineNumber,
 			MessageTexts,
@@ -144,7 +152,7 @@ export class Smsir {
 	 * @param {number} PackId - The ID of the scheduled message pack to delete
 	 * @returns {Promise} The response from the API
 	 */
-	async DeleteScheduled(PackId: number): Promise<any> {
+	async DeleteScheduled(PackId: number): Promise<ReturnedData> {
 		return this.Api(`send/scheduled/${PackId}`, "DELETE");
 	}
 
@@ -152,10 +160,10 @@ export class Smsir {
 	 * Send a verification code via SMS
 	 * @param {string} Mobile - The mobile number of the recipient
 	 * @param {number} TemplateId - The ID of the verification code template to use
-	 * @param {Array<any>} Parameters - An array of parameters to use in the verification code template
+	 * @param {} Parameters - An array of parameters to use in the verification code template
 	 * @returns {Promise} The response from the API
 	 */
-	async SendVerifyCode(Mobile: string, TemplateId: number, Parameters: Array<any>): Promise<any> {
+	async SendVerifyCode(Mobile: string, TemplateId: number, Parameters: IParameter[]): Promise<ReturnedData> {
 		return this.Api("send/verify", "POST", {
 			Mobile,
 			TemplateId,
@@ -168,7 +176,7 @@ export class Smsir {
 	 * @param {number} MessageId - The ID of the sent message to get a report on
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportMessage(MessageId: number): Promise<any> {
+	async ReportMessage(MessageId: number): Promise<ReturnedData> {
 		return this.Api(`send/${MessageId}`);
 	}
 
@@ -177,7 +185,7 @@ export class Smsir {
 	 * @param {number} PackId - The ID of the sent message pack to get a report on
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportPack(PackId: number): Promise<any> {
+	async ReportPack(PackId: number): Promise<ReturnedData> {
 		return this.Api(`send/pack/${PackId}`);
 	}
 
@@ -187,7 +195,7 @@ export class Smsir {
 	 * @param {number} [pageNumber=1] - The page number to return results for
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportToday(pageSize: number = 10, pageNumber: number = 1): Promise<any> {
+	async ReportToday(pageSize: number = 10, pageNumber: number = 1): Promise<ReturnedData> {
 		return this.Api("send/live", "GET", {
 			pageSize,
 			pageNumber,
@@ -207,7 +215,7 @@ export class Smsir {
 		toDate: number | null = null,
 		pageSize: number = 10,
 		pageNumber: number = 1
-	): Promise<any> {
+	): Promise<ReturnedData> {
 		return this.Api("send/archive", "GET", {
 			fromDate,
 			toDate,
@@ -221,7 +229,7 @@ export class Smsir {
 	 * @param {number} [count=100] - The number of results to return
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportLatestReceived(count: number = 100): Promise<any> {
+	async ReportLatestReceived(count: number = 100): Promise<ReturnedData> {
 		return this.Api("receive/latest", "GET", { count });
 	}
 
@@ -231,7 +239,7 @@ export class Smsir {
 	 * @param {number} [pageNumber=1] - The page number to return results for
 	 * @returns {Promise} The response from the API
 	 */
-	async ReportTodayReceived(pageSize: number = 10, pageNumber: number = 1): Promise<any> {
+	async ReportTodayReceived(pageSize: number = 10, pageNumber: number = 1): Promise<ReturnedData> {
 		return this.Api("receive/live", "GET", {
 			pageSize,
 			pageNumber,
@@ -251,7 +259,7 @@ export class Smsir {
 		toDate: number | null = null,
 		pageSize: number = 10,
 		pageNumber: number = 1
-	): Promise<any> {
+	): Promise<ReturnedData> {
 		return this.Api("receive/archive", "GET", {
 			fromDate,
 			toDate,
@@ -264,7 +272,7 @@ export class Smsir {
 	 * Get the remaining credit balance for the SMS.ir account
 	 * @returns {Promise} The response from the API
 	 */
-	async GetCredit(): Promise<any> {
+	async GetCredit(): Promise<ReturnedData> {
 		return this.Api("credit");
 	}
 
@@ -272,7 +280,7 @@ export class Smsir {
 	 * Get a list of available line numbers for the SMS.ir account
 	 * @returns {Promise} The response from the API
 	 */
-	async GetLineNumbers(): Promise<any> {
+	async GetLineNumbers(): Promise<ReturnedData> {
 		return this.Api("line");
 	}
 }
