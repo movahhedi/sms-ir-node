@@ -1,4 +1,4 @@
-import axios, { type AxiosRequestConfig } from "axios";
+// import axios, { type AxiosRequestConfig } from "axios";
 
 const DefaultPageSize = 100;
 
@@ -114,29 +114,28 @@ export class Smsir {
 	/**
 	 * Make an API request to the SMS.ir API
 	 * @private
-	 * @param {string} UrlSuffix - The URL suffix for the API endpoint
-	 * @param {("GET"|"POST"|"DELETE")} [Method="GET"] - The HTTP method to use for the request
-	 * @param {object|null} [Data=null] - The data to send with the request
+	 * @param {string} urlSuffix - The URL suffix for the API endpoint
+	 * @param {("GET"|"POST"|"DELETE")} [method="GET"] - The HTTP method to use for the request
+	 * @param {object|null} [data=null] - The data to send with the request
 	 * @returns {Promise} The response from the API
 	 */
 	private async Api(
-		UrlSuffix: string,
-		Method: "GET" | "POST" | "DELETE" = "GET",
-		Data: object | null = null,
-		AxiosConfig: AxiosRequestConfig<object | null> = {}
+		urlSuffix: string,
+		method: "GET" | "POST" | "DELETE" = "GET",
+		data: object | undefined = undefined,
 	): Promise<Data_Base> {
-		const response = await axios({
+		const response = await fetch(`${this.ApiUrl}/${urlSuffix}`, {
 			headers: {
 				Accept: "application/json",
 				"Content-Type": "application/json",
 				"X-API-KEY": this.ApiKey,
 			},
-			url: `${this.ApiUrl}/${UrlSuffix}`,
-			method: Method,
-			data: Data,
-			...AxiosConfig,
+			method,
+			body: data && JSON.stringify(data),
 		});
-		return response?.data;
+		const responseBody = await response.json();
+
+		return responseBody?.data;
 	}
 
 	/**
@@ -158,27 +157,29 @@ export class Smsir {
 
 	/**
 	 * Send a single SMS message to a single recipient (The username for the SMS.ir account is required)
-	 * @param {string} MessageText - The text of the message to send
-	 * @param {string} Mobile - The mobile number of the recipient
-	 * @param {ILineNumber} [LineNumber=this.LineNumber] - The line number to use for sending the message
-	 * @param {string} [Username=this.Username] - The username for the SMS.ir account
+	 * @param {string} messageText - The text of the message to send
+	 * @param {string} mobile - The mobile number of the recipient
+	 * @param {ILineNumber} [lineNumber=this.LineNumber] - The line number to use for sending the message
+	 * @param {string} [username=this.Username] - The username for the SMS.ir account
 	 * @returns {Promise} The response from the API
 	 */
 	async SendWithUsername(
-		MessageText: string,
-		Mobile: string,
-		LineNumber: ILineNumber = this.LineNumber,
-		Username: string | null = this.Username
+		messageText: string,
+		mobile: string,
+		lineNumber: ILineNumber = this.LineNumber,
+		username: string | null = this.Username
 	): Promise<Data_SendWithUsername> {
-		return this.Api("send", "GET", null, {
-			params: {
-				username: Username,
-				password: this.ApiKey,
-				line: LineNumber,
-				mobile: Mobile,
-				text: MessageText,
-			},
-		});
+		return this.Api(
+			"send?" +
+				new URLSearchParams({
+					username: username ?? "",
+					password: this.ApiKey,
+					line: "" + lineNumber,
+					mobile,
+					text: messageText,
+				}),
+			"GET",
+		);
 	}
 
 	/**
@@ -186,17 +187,17 @@ export class Smsir {
 	 * @param {string} MessageText - The text of the message to send
 	 * @param {Array<string>} Mobiles - An array of mobile numbers of the recipients
 	 * @param {number|null} [SendDateTime=null] - The Unix timestamp of when to send the message (null for immediate sending)
-	 * @param {ILineNumber} [LineNumber=this.LineNumber] - The line number to use for sending the message
+	 * @param {ILineNumber} [lineNumber=this.LineNumber] - The line number to use for sending the message
 	 * @returns {Promise} The response from the API
 	 */
 	async SendBulk(
 		MessageText: string,
 		Mobiles: Array<string>,
 		SendDateTime: number | null = null,
-		LineNumber: ILineNumber = this.LineNumber
+		lineNumber: ILineNumber = this.LineNumber
 	): Promise<Data_SendBulk> {
 		return this.Api("send/bulk", "POST", {
-			lineNumber: LineNumber,
+			lineNumber,
 			MessageText,
 			Mobiles,
 			SendDateTime,
@@ -208,17 +209,17 @@ export class Smsir {
 	 * @param {string} MessageTexts - The text of the messages to send
 	 * @param {Array<string>} Mobiles - An array of mobile numbers of the recipients
 	 * @param {number|null} [SendDateTime=null] - The Unix timestamp of when to send the message (null for immediate sending)
-	 * @param {ILineNumber|null} [LineNumber=null] - The line number to use for sending the message (null for  line number)
+	 * @param {ILineNumber|null} [lineNumber=null] - The line number to use for sending the message (null for  line number)
 	 * @returns {Promise} The response from the API
 	 */
 	async SendLikeToLike(
 		MessageTexts: string,
 		Mobiles: Array<string>,
 		SendDateTime: number | null = null,
-		LineNumber: ILineNumber = this.LineNumber
+		lineNumber: ILineNumber = this.LineNumber
 	): Promise<Data_LikeToLike> {
 		return this.Api("send/likeToLike", "POST", {
-			lineNumber: LineNumber,
+			lineNumber,
 			MessageTexts,
 			Mobiles,
 			SendDateTime,

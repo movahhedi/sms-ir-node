@@ -1,6 +1,6 @@
 {
 	"name": "sms-ir-api",
-	"version": "1.1.1",
+	"version": "1.2.1",
 	"description": "SMS.IR API client for JS/TS/ESM/Node.js",
 	"author": {
 		"name": "Shahab Movahhedi",
@@ -62,11 +62,8 @@
 		"build": "microbundle build --raw true --generateType -f modern,esm,cjs,umd",
 		"dev": "microbundle watch -f modern,esm,cjs,umd"
 	},
-	"dependencies": {
-		"axios": "^1.6.0"
-	},
 	"devDependencies": {
 		"microbundle": "^0.15.1",
-		"typescript": "^5.2.2"
+		"typescript": "^5.3.3"
 	}
 }
