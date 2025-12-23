@@ -1,6 +1,6 @@
 {
 	"name": "sms-ir-api",
-	"version": "1.2.1",
+	"version": "1.3.0",
 	"description": "SMS.IR API client for JS/TS/ESM/Node.js",
 	"author": {
 		"name": "Shahab Movahhedi",
