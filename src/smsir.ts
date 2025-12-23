@@ -376,5 +376,3 @@ export class Smsir {
 		return this.Api("line");
 	}
 }
-
-export default Smsir;
