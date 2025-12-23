@@ -12,6 +12,12 @@ With npm:
 npm install sms-ir-api
 ```
 
+With PNPM:
+
+```bash
+pnpm add sms-ir-api
+```
+
 With yarn:
 
 ```bash

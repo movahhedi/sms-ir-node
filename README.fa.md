@@ -12,6 +12,12 @@
 npm install sms-ir-api
 ```
 
+با PNPM:
+
+```bash
+pnpm add sms-ir-api
+```
+
 با yarn:
 
 ```bash
